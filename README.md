@@ -6,7 +6,7 @@
 
 ## Solution
 
-I have written a script to update the core so that `show-java` can be built with the latest core and function properly when decompiling apps.
+I have written a script to update the core so that `show-java` can be built with the latest core and function properly when decompiling apps. 
 
 
 ## jadx-sparse-core-checkout.sh
@@ -77,5 +77,6 @@ To obtain the software under a different license, please contact [Niranjan Rajen
 4. [Ben Gruver](https://github.com/JesusFreke/) for dexlib2.
 5. [skylot](https://github.com/skylot) for JaDX.
 6. [JetBrains](https://github.com/JetBrains) for FernFlower analytical decompiler.
+7. [dazzleworth] (https://github.com/dazzleworth) for JaDX Core update shell script
 
 > Android, Google Play and the Google Play logo are trademarks of Google Inc.
