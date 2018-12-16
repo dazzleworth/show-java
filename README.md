@@ -1,36 +1,49 @@
-[![Dependency Status](https://www.versioneye.com/user/projects/5749244fce8d0e004505f807/badge.svg?style=flat)](https://www.versioneye.com/user/projects/5749244fce8d0e004505f807)  [![Build Status](https://img.shields.io/travis/niranjan94/show-java.svg?style=flat-square)](https://travis-ci.org/niranjan94/show-java) [![License Info](https://img.shields.io/badge/license-GNU_AGPLv3-blue.svg?style=flat-square)](https://github.com/niranjan94/show-java) [![Play Store Info](https://img.shields.io/badge/Play_Store-v2.1.0-36B0C1.svg?style=flat-square)](https://play.google.com/store/apps/details?id=com.njlabs.showjava) [![GitHub app version](https://img.shields.io/badge/GitHub-v2.1.0-yellow.svg?style=flat-square)](https://github.com/niranjan94/show-java) [![Play Store downloads](https://img.shields.io/badge/downloads-260k%20total-E04253.svg?style=flat-square)](https://play.google.com/store/apps/details?id=com.njlabs.showjava)
+## Script to upgrade JADX core for ShowJava, an Android decompiler for android
+
+## Problem
+
+`show-java` is a great app to decompile other Android apps on the fly. However, its built based on the JaDX core. JaDX is the desktop version and its actively maintained.
+
+## Solution
+
+I have written a script to update the core so that `show-java` can be built with the latest core and function properly when decompiling apps.
 
 
-![ShowJava Banner v0.1](https://raw.githubusercontent.com/niranjan94/show-java/master/banner.png?v1)
+## jadx-sparse-core-checkout.sh
 
-An apk decompiler for android. Built on Android Studio 1.5 with gradle 2.8
+	#!/bin/sh
 
-> The current GitHub master branch may be ahead of the Play Store version (and could be unstable/incomplete/buggy at some places)
+	jadx_core_rep=https://github.com/skylot/jadx.git
+	tmp_path=tmp
+	src_path=($tmp_path "jadx-core" "src" "main" "java" "jadx")
+	dest_path=("app" "src" "main" "java")
 
-[<img src="https://play.google.com/intl/en_us/badges/images/apps/en-play-badge-border.png" width="200" alt="Get Show Java on Google Play" />](https://play.google.com/store/apps/details?id=com.njlabs.showjava "Get Show Java on Google Play")
-## About
-This is a Decompiler that extracts the source code of an Android application (including XML files and image assets). Works directly from your android device.
+	mkdir $tmp_path
+	cd "$tmp_path$ds"
+	git init
+	git remote add -f origin $jadx_core_rep
+	git pull origin master
 
-## Features
+	src_path=$(printf '%s/' "${src_path[@]%/}" )
+	dest_path=$(printf '%s/' "${dest_path[@]%/}" )
 
-- Select either **CFR 0.110**, **JaDX 0.6.1** or **FernFlower (analytical decompiler)** to use as the decompiler (more to come).
-- Runs directly on an android device (4.x and above).
-- Select apk from sdcard (or) from a list of installed applications.
-- Easy to use.
-- Decompiles resources too (layouts, Drawables, Menus, AndroidManifest, image assets).
-- Displays code in a clean-syntax-highlighted form.
-- The decompiled source can easily be copied from the sdcard (source is stored in ShowJava folder in the sdcard).
-- Simple source browser with a summary of all decompilation errors.
-- Each decompiled source file has commented references to classes that could not be decompiled.
-- Share the decompiled source easily with the built in archive + share mechanism.
+	cd ..
 
-## Known Issues
-1. Does not work with system applications in most of the phones (especially ones that are not de-odexed).
-2. Slow on phones with single core processors.
+	rm -r "${dest_path}jadx"
 
-## Contributing to ShowJava
+	mv -v $src_path $dest_path
 
-Head over [here](https://github.com/niranjan94/show-java/blob/master/CONTRIBUTING.md) to know more about how to contribute, report bugs and request feature additions.
+	rm -rf "$tmp_path"
+
+
+## Script Copyright
+
+	Copyright (C) 2018 dazzleworth
+	
+	Email: opr_nexus@yahoo.com
+	Twitter: twitter.com/dazzleworth
+	Github: github.com/dazzleworth
+	
 
 ## Open Source License
 
