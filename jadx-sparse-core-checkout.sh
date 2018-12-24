@@ -1,4 +1,5 @@
 #!/bin/sh
+# Copyright (c) 2018 Brendan Chong Email: opr_nexus@yahoo.com
 
 jadx_core_rep=https://github.com/skylot/jadx.git
 tmp_path=tmp
