@@ -3,6 +3,7 @@
 
 cfr_filematch="cfr*[.-_][0-9.-_]*[0-9].jar"
 cfr_download="http://www.benf.org/other/cfr/index.html"
+lib_path=("app" "libs")
 
 download() {
   read proto server path <<< "${1//"/"/ }"
@@ -29,17 +30,30 @@ download() {
   exec 3>&-
 }
 
-ma=<a\s+(?:[^>]*?\s+)?href=([\"'])($cfr_filematch)\1
 
-echo $ma
 
-latest_result=$(download $cfr_download | grep -o "$ma")
+#echo "<a.*a>\\$cfr_filematch"
 
-res=$(ls | grep $cfr_filematch)
+latest_result=$(download $cfr_download | grep -Eoi '<a [^>]+>' | grep -Eo 'href="[^\"]+"') #| grep -Eo 'cfr*[.-_][0-9.-_]*[0-9].jar'
+
+res=$(echo $latest_result | grep -Eo 'cfr[-._][0-9]+\.[0-9]{1,3}+.jar' )
 
 echo $res
 
-echo $latest_result
+lib_path=$(printf '%s/' "${lib_path[@]%/}" )
+
+cd $lib_path 
+
+lib_cfr=$(ls | grep -o "$cfr_filematch" )
+
+echo $lib_cfr
+#latest_result=$(download $cfr_download \ | xmllint --xpath 'string(//a[text()="some value"]/@href)' - )
+
+#latest_result=$(echo "$latest_result" | grep "/<a\s+(?:[^>]*?\s+)?href=([\"'])(.*?)\1/") 
+
+#res=$(echo "$latest_result" | grep -o "$cfr_filematch")
+
+#echo $res
 
 
 
