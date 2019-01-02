@@ -1,5 +1,10 @@
 #!/bin/sh
 # Copyright (c) 2018 Brendan Chong Email: opr_nexus@yahoo.com
+# Script to update CFR decompiler
+# Tested to work with Git Shell in Windows: 
+# https://github-windows.s3.amazonaws.com/GitHubSetup.exe 
+# No permission required in normal Windows environment
+
 
 jadx_core_rep=https://github.com/skylot/jadx.git
 tmp_path=tmp
