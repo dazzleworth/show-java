@@ -5,7 +5,11 @@
 # https://github-windows.s3.amazonaws.com/GitHubSetup.exe 
 # No permission required in normal Windows environment
 
-cfr_filematch="cfr*[.-_][0-9][.-_][0-9].jar"
+name=cfr
+name_sep='.-_'
+name_sep_rev='-._'
+ver_codes='0-9'
+cfr_filematch="$name*[$name_sep][$ver_codes][$name_sep][$ver_codes].jar"
 cfr_download="http://www.benf.org/other/cfr/"
 lib_path=("app" "libs")
 lib_path=$(printf '%s/' "${lib_path[@]%/}" )
@@ -38,33 +42,41 @@ download() {
 
 
 
-#echo "<a.*a>\\$cfr_filematch"
-
 latest_result=$(download $(printf '%s/index.html' $cfr_download) | grep -Eoi '<a [^>]+>' | grep -Eo 'href="[^\"]+"') #| grep -Eo 'cfr*[.-_][0-9.-_]*[0-9].jar'
 
-res=$(echo $latest_result | grep -Eo 'cfr[-._][0-9]+\.[0-9]{1,3}+.jar' | head -1)
+res=$(echo $latest_result | grep -Eo "$name[$name_sep_rev][$ver_codes]+\.[$ver_codes]{1,3}+.jar" | head -1)
 
-echo $res #| sed 's/[^0-9]*//g'
+#echo $res #| sed 's/[^0-9]*//g'
 
-IFS=".-_" read -r -a arr <<< $res
+IFS=$name_sep read -r -a arr <<< $res
 
-echo "${arr[1]} me"
+maj_rem="${arr[1]}"
+min_rem="${arr[2]}"
+
 
 cd $lib_path 
 
 lib_cfr=$(ls | grep $cfr_filematch)
 
-echo $lib_cfr
+#echo $lib_cfr
 
-(IFS=".-_"; for word in $lib_cfr; do echo "$word"; done)
-#latest_result=$(download $cfr_download \ | xmllint --xpath 'string(//a[text()="some value"]/@href)' - )
+IFS=$name_sep read -r -a arr <<< $lib_cfr
 
-#latest_result=$(echo "$latest_result" | grep "/<a\s+(?:[^>]*?\s+)?href=([\"'])(.*?)\1/") 
+maj_local="${arr[1]}"
+min_local="${arr[2]}"
 
-#res=$(echo "$latest_result" | grep -o "$cfr_filematch")
+maj_local=$(($maj_local+0))
+maj_remote=$(($maj_remote+0))
 
-#echo $res
+if [ "$maj_remote" -le "$maj_local" ]
+then
+	min_local=$(($min_local+0))
+	min_rem=$(($min_rem+0))
+	
+	if [ "$min_rem" -gt "$min_local" ]
+	then
+		download $(printf '%s/%s' $cfr_download $res) > $res
+		rm $lib_cfr
+	fi
+fi
 
-
-
-# download http://www.benf.org/other/cfr/cfr-0.138.jar > temp.jar
