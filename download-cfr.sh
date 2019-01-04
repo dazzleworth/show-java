@@ -14,6 +14,8 @@ cfr_download="http://www.benf.org/other/cfr/"
 lib_path=("app" "libs")
 lib_path=$(printf '%s/' "${lib_path[@]%/}" )
 
+echo 'Checking for update...'
+
 # Reference : https://unix.stackexchange.com/q/83926
 download() {
   read proto server path <<< "${1//"/"/ }"
@@ -42,7 +44,7 @@ download() {
 
 
 
-latest_result=$(download $(printf '%s/index.html' $cfr_download) | grep -Eoi '<a [^>]+>' | grep -Eo 'href="[^\"]+"') #| grep -Eo 'cfr*[.-_][0-9.-_]*[0-9].jar'
+latest_result=$(download $(printf '%s/index.html' $cfr_download) | grep -Eoi '<a [^>]+>' | grep -Eo 'href="[^\"]+"')
 
 res=$(echo $latest_result | grep -Eo "$name[$name_sep_rev][$ver_codes]+\.[$ver_codes]{1,3}+.jar" | head -1)
 
@@ -75,8 +77,13 @@ then
 	
 	if [ "$min_rem" -gt "$min_local" ]
 	then
+		echo 'Update found. Updating....'
 		download $(printf '%s/%s' $cfr_download $res) > $res
 		rm $lib_cfr
+		git add $res
+		git commit -m $(printf 'Updated CFR to v%s.%s' $maj_remote $min_rem)
+	else
+		echo 'You have latest.'
 	fi
 fi
 

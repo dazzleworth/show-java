@@ -1,5 +1,10 @@
 package jadx.core.codegen;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import jadx.core.Consts;
 import jadx.core.dex.attributes.AType;
 import jadx.core.dex.attributes.IAttributeNode;
@@ -13,11 +18,6 @@ import jadx.core.dex.nodes.FieldNode;
 import jadx.core.dex.nodes.MethodNode;
 import jadx.core.utils.StringUtils;
 import jadx.core.utils.exceptions.JadxRuntimeException;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 public class AnnotationGen {
 
@@ -130,11 +130,11 @@ public class AnnotationGen {
 			return;
 		}
 		if (val instanceof String) {
-			code.add(StringUtils.unescapeString((String) val));
+			code.add(getStringUtils().unescapeString((String) val));
 		} else if (val instanceof Integer) {
 			code.add(TypeGen.formatInteger((Integer) val));
 		} else if (val instanceof Character) {
-			code.add(StringUtils.unescapeChar((Character) val));
+			code.add(getStringUtils().unescapeChar((Character) val));
 		} else if (val instanceof Boolean) {
 			code.add(Boolean.TRUE.equals(val) ? "true" : "false");
 		} else if (val instanceof Float) {
@@ -171,5 +171,9 @@ public class AnnotationGen {
 			// TODO: also can be method values
 			throw new JadxRuntimeException("Can't decode value: " + val + " (" + val.getClass() + ")");
 		}
+	}
+
+	private StringUtils getStringUtils() {
+		return cls.dex().root().getStringUtils();
 	}
 }

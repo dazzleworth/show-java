@@ -1,5 +1,12 @@
 package jadx.core.dex.visitors;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jadx.core.Consts;
 import jadx.core.dex.info.FieldInfo;
 import jadx.core.dex.info.MethodInfo;
@@ -21,13 +28,6 @@ import jadx.core.dex.nodes.BlockNode;
 import jadx.core.dex.nodes.InsnNode;
 import jadx.core.dex.nodes.MethodNode;
 import jadx.core.dex.regions.conditions.IfCondition;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SimplifyVisitor extends AbstractVisitor {
 
@@ -207,9 +207,8 @@ public class SimplifyVisitor extends AbstractVisitor {
 						return concatInsn;
 					} // end of if constructor is for StringBuilder
 				} // end of if we found a constructor early in the chain
-
-			} catch (Throwable e) {
-				LOG.debug("Can't convert string concatenation: {} insn: {}", mth, insn, e);
+			} catch (Exception e) {
+				LOG.warn("Can't convert string concatenation: {} insn: {}", mth, insn, e);
 			}
 		}
 		return null;
@@ -298,7 +297,7 @@ public class SimplifyVisitor extends AbstractVisitor {
 	}
 
 	private static List<InsnNode> flattenInsnChain(InsnNode insn) {
-		List<InsnNode> chain = new ArrayList<InsnNode>();
+		List<InsnNode> chain = new ArrayList<>();
 		InsnArg i = insn.getArg(0);
 		while (i.isInsnWrap()) {
 			InsnNode wrapInsn = ((InsnWrapArg) i).getWrapInsn();

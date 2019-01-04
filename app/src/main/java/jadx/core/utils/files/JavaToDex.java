@@ -1,21 +1,20 @@
 package jadx.core.utils.files;
 
-import jadx.core.utils.exceptions.JadxException;
-
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 
-import com.android.dx.command.DxConsole;
+import com.android.dx.command.dexer.DxContext;
 import com.android.dx.command.dexer.Main;
 import com.android.dx.command.dexer.Main.Arguments;
+
+import jadx.core.utils.exceptions.JadxException;
 
 public class JavaToDex {
 
 	private static final String CHARSET_NAME = "UTF-8";
 
-	public static class DxArgs extends Arguments {
-		public DxArgs(String dexFile, String[] input) {
+	private static class DxArgs extends Arguments {
+		public DxArgs(DxContext context, String dexFile, String[] input) {
+			super(context);
 			outName = dexFile;
 			fileNames = input;
 			jarOutput = false;
@@ -23,37 +22,29 @@ public class JavaToDex {
 			optimize = true;
 			localInfo = true;
 			coreLibrary = true;
+
+			debug = true;
+			warnings = true;
+			minSdkVersion = 28;
 		}
 	}
 
 	private String dxErrors;
 
 	public byte[] convert(String javaFile) throws JadxException {
-		ByteArrayOutputStream errOut = new ByteArrayOutputStream();
-		try {
-			DxConsole.err = new PrintStream(errOut, true, CHARSET_NAME);
-		} catch (UnsupportedEncodingException e) {
-			throw new JadxException(e.getMessage(), e);
-		}
-		PrintStream oldOut = System.out;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try {
-			System.setOut(new PrintStream(baos, true, CHARSET_NAME));
-			DxArgs args = new DxArgs("-", new String[]{javaFile});
-			Main.run(args);
-			baos.close();
-		} catch (Throwable e) {
-			throw new JadxException("dx exception: " + e.getMessage(), e);
-		} finally {
-			System.setOut(oldOut);
-		}
-		try {
-			// errOut also contains warnings
+		try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+		     ByteArrayOutputStream errOut = new ByteArrayOutputStream()) {
+			DxContext context = new DxContext(out, errOut);
+			DxArgs args = new DxArgs(context, "-", new String[]{javaFile});
+			int result = (new Main(context)).runDx(args);
 			dxErrors = errOut.toString(CHARSET_NAME);
-		} catch (UnsupportedEncodingException e) {
-			throw new JadxException("Can't save error output", e);
+			if (result != 0) {
+				throw new JadxException("Java to dex conversion error, code: " + result);
+			}
+			return out.toByteArray();
+		} catch (Exception e) {
+			throw new JadxException("dx exception: " + e.getMessage(), e);
 		}
-		return baos.toByteArray();
 	}
 
 	public String getDxErrors() {
@@ -61,6 +52,6 @@ public class JavaToDex {
 	}
 
 	public boolean isError() {
-		return dxErrors != null && dxErrors.length() > 0;
+		return dxErrors != null && !dxErrors.isEmpty();
 	}
 }

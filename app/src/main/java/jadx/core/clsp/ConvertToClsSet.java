@@ -1,10 +1,5 @@
 package jadx.core.clsp;
 
-import jadx.api.JadxArgs;
-import jadx.core.dex.nodes.RootNode;
-import jadx.core.utils.exceptions.DecodeException;
-import jadx.core.utils.files.InputFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +7,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jadx.api.JadxArgs;
+import jadx.core.dex.nodes.RootNode;
+import jadx.core.utils.exceptions.DecodeException;
+import jadx.core.utils.files.InputFile;
 
 /**
  * Utility class for convert dex or jar to jadx classes set (.jcst)
@@ -30,18 +30,13 @@ public class ConvertToClsSet {
 		}
 		File output = new File(args[0]);
 
-		List<InputFile> inputFiles = new ArrayList<InputFile>(args.length - 1);
+		List<InputFile> inputFiles = new ArrayList<>(args.length - 1);
 		for (int i = 1; i < args.length; i++) {
 			File f = new File(args[i]);
 			if (f.isDirectory()) {
 				addFilesFromDirectory(f, inputFiles);
 			} else {
-				InputFile inputFile = new InputFile(f);
-				inputFiles.add(inputFile);
-				while (inputFile.nextDexIndex != -1) {
-					inputFile = new InputFile(f, inputFile.nextDexIndex);
-					inputFiles.add(inputFile);
-				}
+				InputFile.addFilesFrom(f, inputFiles);
 			}
 		}
 		for (InputFile inputFile : inputFiles) {
@@ -58,8 +53,7 @@ public class ConvertToClsSet {
 		LOG.info("done");
 	}
 
-	private static void addFilesFromDirectory(File dir,
-			List<InputFile> inputFiles) throws IOException, DecodeException {
+	private static void addFilesFromDirectory(File dir, List<InputFile> inputFiles) {
 		File[] files = dir.listFiles();
 		if (files == null) {
 			return;
@@ -67,19 +61,13 @@ public class ConvertToClsSet {
 		for (File file : files) {
 			if (file.isDirectory()) {
 				addFilesFromDirectory(file, inputFiles);
-			}
-			String fileName = file.getName();
-			if (fileName.endsWith(".dex")
-					|| fileName.endsWith(".jar")
-					|| fileName.endsWith(".apk")) {
-				InputFile inputFile = new InputFile(file);
-				inputFiles.add(inputFile);
-				while (inputFile.nextDexIndex != -1) {
-					inputFile = new InputFile(file, inputFile.nextDexIndex);
-					inputFiles.add(inputFile);
+			} else {
+				try {
+					InputFile.addFilesFrom(file, inputFiles);
+				} catch (Exception e) {
+					LOG.warn("Skip file: {}, load error: {}", file, e.getMessage());
 				}
 			}
 		}
 	}
-
 }

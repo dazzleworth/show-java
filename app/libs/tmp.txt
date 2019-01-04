@@ -1,0 +1,1321 @@
+<html>
+<head>
+<meta name="description" content="CFR is a JVM bytecode decompiler - it will decompile modern Java features - up to and including much of Java 9, but is written entirely in Java 6, so will work anywhere! - It'll even make a decent go of turning class files from other JVM languages (eg Kotlin, Scala, Groovy) back into Java!">
+</head>
+<title>CFR - yet another java decompiler.</title>
+<body bgcolor=white> <table border=0 bgcolor=DDDDDD width=100%><tr><td>
+<font size=-1>
+<a href="http://www.benf.org">benf.org</a>&nbsp;:&nbsp;
+<a href="http://www.benf.org/other">other</a>&nbsp;:&nbsp;
+cfr
+</font>
+</td></tr></table>
+<hr>
+<h3>CFR - another java decompiler</h3>
+
+<p>CFR will decompile modern Java features - up to and <a href="java9observations.html">including much of Java 9, 10 and beyond</a>, but is written entirely in Java 6, so will work anywhere!  (<a href="faq.html">FAQ</a>) - It'll even make a decent go of turning class files from other JVM langauges back into java!</p>
+<p>
+To use, simply run the specific version jar, with the class name(s) you want to decompile (either as a path to a class file, or as a fully qualified classname on your classpath).
+(<font face="monospace">--help</font> to list arguments).
+</p>
+<p>Alternately, to decompile an entire jar, simply provide the jar path, and if you want to emit files (which you probably do!) add <font face="monospace">--outputdir /tmp/putithere</font></p>
+<img src="cfr_screen_0_130.png" alt="usage screenshot"/><br>
+
+<h3>Download cfr</h3>
+<ul>
+<li><a href="cfr-0.138.jar">cfr-0.138.jar</a> (December 2018) <font style="font-family:monospace">md5: d353bc23a1a6c9036505968a6eb9fc29</font><br>
+<li><a href="cfr-0.137.jar">cfr-0.137.jar</a> (December 2018) (I suggest using latest, but if you spot a regression, it means I'm missing a test... so please shout!)
+<li><a href="old_versions.html">Older versions</a>
+</ul>
+
+<h3>FAQ</h3>
+
+<p>FAQ is <a href="faq.html">here</a></p>
+
+<h3>Contact / Updates</h3>
+
+<p>Feel free to drop me a line (lee@benf.org) if there's anything you think is particularly broken, bear in mind it's a work in progress (but I'd say on a par with others!) - Or if you want to know when an update is out, I've finally started announcing on twitter - (<a href="http://www.twitter.com/LeeAtBenf">@LeeAtBenf)</a></p>
+
+<hr width="100%">
+<h3>Observations about syntactic sugar in compilation.</h3>
+
+<p>All of this stuff is documented (links where I find them); these are things I found particularly interesting while messing around with this.</p>
+
+<ul>
+<li>Stringbuilder <a href="stringbuilder-vs-concatenation.html">vs concatenation</a>.
+<li>...or StringConcatFactory <a href="java9stringconcat.html">vs concatenation in java9+</a>.
+<li>How are <a href="how-are-enums-implemented.html">Java 1.5 Enums implemented</a>?
+<li>How is <a href="how-is-assert-implemented.html">Java 1.4 assert implemented</a>?
+<li>How is <a href="switch-on-enum.html">switch-on-enum</a> compiled?
+<li>How is Java 7's <a href="java7switchonstring.html">switch-on-string</a> compiled?
+<li><a href="varargs.html">varargs</a> is just a method attribute...
+<li>Autoboxing <a href="boxing-isnt-magic.html">is expanded for you</a> by the compiler
+<li>Looking at <a href="boxing-caches.html">Integer.valueOf's cache</a>
+<li>Inner classes have to <a href="inner-class-fake-friends.html">fake friendship</a>...
+<li>Java 8's <a href="java8lambdas.html">lambdas</a>..
+<li>... and a bit about <a href="java8lambda_serialisation.html">lambda serialisation</a> boilerplate
+<li>Lambdas on instance methods also see <a href="java8lambda_instancemethodref_getclass.html">getClass() introduced</a>, in later Java 8s.
+<li>Field initialisation and the <a href="how-are-field-initialisers-compiled.html">ConstantValue</a> attribute
+<li><a href="constant-folding.html">Constant folding</a>....
+<li>Class constants in java 1.4 are initialised in an ... <a href="java4classconstants.html">odd fashion</a>...
+<li>The 1.6+ <a href="finally.html">finally</a> block, and code size blowup (come back JSR, all is forgiven.)
+<li>Final statics <a href="final-statics.html">are inlined completely</a>.
+<li>How does Kotlin do <a href="kotlin-defaults.html">default arguments</a>?
+<li>What's interesting <a href="java9observations.html">about Java 9</a> for decompilation?</li>
+<li>How does Kotlin generate <a href="kotlin-switchonstring.html">switch on string</a> (i.e. when (string))?</li>
+<li>How does Eclipse's compiler <a href="eclipse-differences.html">differ from Javac?<a>
+</ul>
+
+<p>.... and other observations, more relating to obfuscation..... </p>
+
+<ul>
+<li><a href="obfuscation_field_renaming.html">Duplicate field names<a> in a class.
+<li>Related, (but more awkward!) <a href="obfuscation_method_renaming.html">duplicate method signatures</a> in a class.
+<li><a href="obfuscation_illegal_identifiers.html">Illegal identifiers</a> in a class.
+</ul>
+
+
+<hr width="100%">
+
+<h3>To do...</h3>
+
+<p>
+It's got a lot of things missing, which I'm messing with, as and when time makes itself available ;)
+</p>
+
+<ul>
+<li>Generic reverse inference (forward inference works... getting better!)
+<li>Correct generic inference for locals which don't escape scope.  <i>Without trusting localVariableTypeTable, this is hard.  I may have to use it :( </i>
+<li>More Java 9+ improvements (java's a moving target these days!)
+<li>And more....
+</ul>
+
+<hr width="100%">
+
+<h3>Change history</h3>
+
+<h4>0.138 <small>(<i>2018-12-14</i>)</small></h4>
+
+<ul>
+<li>Handle corrupt class signatures (<i>Thanks <a href="https://github.com/ItzSomebody/StopDecompilingMyJava">itzsomebody</a></i>)
+<li>Be more lenient with mismatching bootstrap arguments ( " )
+<li>Fix precedence issue with unary minus. (<i>Thanks littlestar</i>)
+<li>If we've failed to split lifetimes, leaving too narrow a type, force explicit casts. (<i>Thanks hostalp</i>)
+<li>Fix for failure when validating casts against missing class.
+<li>Fix for NPE when explicitly decompiling an inner class with missing outer. (<i>Thanks abec</i>)
+<li>Improve displayed class name for anonymous classes (normally won't appear, but could be forced) ( " )
+</ul>
+
+<h4>0.137 <small>(<i>2018-12-01</i>)</small></h4>
+
+<ul>
+<li>Several improvements to resugaring of <a href="eclipse-differences.html">ECJ output<a>.  (<i>Thanks <a href="http://www.simplexacode.ch">christianh</a></i>)
+<li>Don't fail on corrupted descriptors where method is marked as varargs. (<i>Thanks abec</i>)
+<li>Don't hide a POD cast if it's being used to determine a runtime boxed type. (<i>Thanks abec</i>)
+<li>Make --sugarenums false a bit more legible (even if the output is still unusable java ;) ).
+</ul>
+
+<h4>0.136 <small>(<i>2018-11-24</i>)</small></h4>
+
+<ul>
+<li>Fix for ordering of inlined lvalue mutations (<i>Thanks abec, karls</i>)
+<li>Improvement to lifetime auditing allows inlining of anonymous arrays with mutators.
+<li>Improve generated code for prechange assignments. (check out <a href="https://bitbucket.org/lab27/cfr_tests/src/7906021dc30c0b681188e8e9fa49136a808b859b/src/org/benf/cfr/tests/IncrTest5.java?at=master&fileviewer=file-view-default">IncrTest5</a>!!)
+<li>Reconsider JSRs if they've been expanded.
+<li>Relabel private static accessors if they're lifted to an outer class.
+<li>Improve lambda desugaring when we don't have target class available (improves reconstruction of java8+ code using jre6!)
+<li>Improve lifetime auditing on ternary roll-up.
+</ul>
+
+<h4>0.135 <small>(<i>2018-11-17</i>)</small></h4>
+
+<ul>
+<li>Now being released to maven central repos. <span style="color:red"><em>Hence the naming style change - it's time to be a little more consistent with the rest of the world!</em></span>
+<li>Finally improved and <a href="api/index.html">documented</a> an API!
+<li>Fixed incorrect complaints of case insensitive fs (<i>Thanks nathanf</i>)
+<li>Fixed a possible incorrect generic binding.
+<li>Improve scoping of some method-scoped classes.
+</ul>
+
+<h4>0_134 <small>(<i>2018-11-04</i>)</small></h4>
+
+<ul>
+<li>External references to methods / fields of anonymous classes, if you're in J10+ - use var where appropriate. (<i>Thanks abec</i>)
+<li>Improvements to explicit type access to members (Force slicing to correct type).
+<li>Handle marker interfaces in lambdametafactory.
+<li>Other fixes for intersection types. (<i>Thanks abec</i>) ... (eg <a href="https://bitbucket.org/lab27/cfr_tests/src/7906021dc30c0b681188e8e9fa49136a808b859b/src/org/benf/cfr/tests/IntersectionReturnTest3.java?at=master&fileviewer=file-view-default">this</a>)
+<li>--jarfilter allows negative filter when prefixed with ! (<i>Thanks gar</i>)
+<li>... a whole bunch of tidying ...
+</ul>
+
+<h4>0_133 <small>(<i>2018-09-21</i>)</small></h4>
+
+<ul>
+<li>Resugar java9 <a href="java9stringconcat.html">indified strings</a> - either indy or indyWithConstants.
+<li>Improve handling of anonymous class constructors.
+<li>Ensure intermediate goto after finally is tagged in correct block (<i>Thanks kalhauge</i>)
+<li>Improve assert resugaring.
+<li>Handle assert detail messages. (<i>Thanks abec</i>)
+<li>Fix issue with method scoped classes in lambdas
+<li>Fix spurious NOP after invokedynamic.  (Improves lambda resugaring, yay!)
+<li>Improve error on read of uninitialized local. (<i>Thanks qwm</i>)
+</ul>
+
+<h4>0_132 <small>(<i>2018-07-06</i>)</small></h4>
+
+<ul>
+<li>Fix issue with batch processing on windows.
+<li>No-op changes to allow CFR to run fully under <a href="http://harmony.apache.org/">Apache Harmony</a>'s Java 6 implementation (I did say it will run on any old Java!) (<i>Thanks abec</i>)
+<li>Improvement to Java9+ loading from modules. (<i>Thanks stefanr</i>)
+</ul>
+
+<h4>0_131 <small>(<i>2018-06-27</i>)</small></h4>
+
+<ul>
+<li>Improvements to method scoped classes. (<i>Thanks abec</i>)
+<li>Prefer classes from explicitly searched jars. ( &quot; )
+</ul>
+
+<h4>0_130 <small>(<i>2018-06-04</i>)</small></h4>
+
+<ul>
+<li>Fix missing cast in immediately evaluated functional interface method. (<i>Thanks abec</i>)
+<li>Fix over eager redundant code removal. ( &quot; )
+<li>Remove incorrect stripping of anonymous array around varargs call. ( &quot; )
+<li>Fix lambda resugaring bug around new Object[0]::clone ( &quot; )
+<li>Improve ternary casting. ( &quot; )
+<li>Handle a particularly <a href="https://bitbucket.org/lab27/cfr_tests/src/4add4b3475d02c5c05381cce37abb584627da269/src/org/benf/cfr/tests/CondTest5a.java?at=master&fileviewer=file-view-default">painful ternary</a> style.
+<li>Fix missing cast when array type requires de-clashing.
+<li>Improve iterated loop resugaring when loop variable is updated.
+<li>Improve type inference.
+<li>Collapse try resources.
+<li>Accept multiple class/jars on command line.
+</ul>
+
+<h4>0_129 <small>(<i>2018-05-15</i>)</small></h4>
+
+<ul>
+<li>Remove horrid reflection to allow java6 to read java9 code. (<i>Thanks comatrices</i>)
+<li>Fix a few grotty inference bugs. (<i>Thanks jstokes</i>)
+<li>Handle <a href="kotlin-switchonstring.html">when-string</a> - kotlin's switch on string - nicely.
+</ul>
+
+<h4>0_128 <small>(<i>2018-04-30</i>)</small></h4>
+
+<ul>
+<li>Tidy jdk9 requireNotNull artifacts.
+<li>Tidy lambda whitespace.
+<li>Fix issue lifting members out of constructors in function-scoped classes.
+<li>Fix scope issue with variable incorrectly captured in loop (<i>Thanks jstokes</i>)
+</ul>
+
+<h4>0_127 <small>(<i>2018-04-26</i>)</small></h4>
+
+<p>...somehow, I manged to release an ancient version as 0_126! 0_127 is the real thing!<br>
+<i>Thanks jstokes for pointing out that bit of idiocy!</i></p>
+
+<del><h4>0_126 <small>(<i>2018-04-25</i>)</small></h4></del>
+
+<ul>
+<li>Fix possible NPE rebuilding string constant references.
+<li>Add a <i>very silly</i> option to allow you to completely --ignoreexceptions.  This is useful when the exception table is so confusing that nothing sensible can be retrieved.
+<li>Remove pointless assignments when dealing with very large bytecode to clean output.
+<li>Allow <a href="java9observations.html#jimage">jimage files to be used</a> when running under JRE9 to read base classes.
+<li>Fix issue with an inner class constructor not having synthetic argument removed.
+<li>Fix anonymous inner not being collapsed across constructors and extracted into field (<i>Thanks jstokes</i>)
+<li>Better handle lack of static marker on <a href="java9observations.html#nonstatic">anonymous classes with JDK9.</a>
+<li>Handle mutating synthetic <a href="java9observations.html#accessors">friend accessors in JDK9</a>.
+<li>Handle try-with-resources in both <a href="java9observations.html#resources">JDK&lt;9 and JDK9</a>.
+</ul>
+
+<h4>0_125 <small>(<i>2018-01-26</i>)</small></h4>
+
+<ul>
+<li>Change visibility of static bridge methods (impossible in java, used for defaults in Kotlin!)
+<li>Fix accidental signed short usage ... oops.... causes index exception on huge tables. (<i>Thanks Bchong</i>)
+<li>Where unambiguous (<a href="final-statics.html">though you can never be sure!</a>), replace string constants with guessed source static finals. (disable with -relinkconststring false) (<i>Thanks Matti</i>)
+</ul>
+
+<h4>0_124 <small>(<i>2018-01-04</i>) - A flurry of mails!</small></h4>
+
+<ul>
+<li>Improvements to boxing around Bytes, missing explicit up and down casts. (<i>Thanks AbeC</i>)
+<li>Handle empty enum switches (<i>Thanks AbeC</i>)
+<li>Removed slightly misguided pretty print of long constants without L where possible
+<li>Ensure method scoped classes are displayed if they're only referred to via teir type constants. (<i>Thanks AbeC</i>)
+</ul>
+
+<h4>0_123 <small>(<i>2017-10-11</i>)</small></h4>
+
+<ul>
+<li>Improvement to assert rewriter  (<i>Thanks abec - lots of tests!</i>)
+<li>Fix for boolean constant in attribute being treated as int (&quot;)
+<li>Don't display defensive cast to anonymous type (&quot;)
+<li>More aggressive anonymous block jumps (&quot;)
+<li>Fix for monadic op on bool casting to int (&quot;)
+<li>Fix classpath issue (<i>Thanks ken</i>)
+<li>Avoid collapsing compound assignment operators where rhs involves further mutation (<i>thanks michaln</i>)
+</ul>
+
+<h4>0_122 <small>(<i>2017-06-12</i>)</small></h4>
+
+<ul>
+<li>Don't detect class as anonymous inner class of object in scala (<i>Thanks sarahg</i>)
+<li>Basic support for varargs bootstrap factories (only seen thus far in scala) (<i>Thanks sarahg</i>)
+<li>Fix for boolean default elementvalue - use hint from returntype (<i>Thanks caoli5288</i>)
+<li>Fix for OuterClass.this() when OuterClass.super() specifically invoked.  (<i>Thanks littlestar</i>)
+</ul>
+
+<h4>0_121 <small>(<i>2017-04-05</i>)</small></h4>
+
+<ul>
+<li>Don't mark static methods with implementations in interfaces (yeuch!) as default (<i>Thanks caoli</i>)
+<li>Fix for missed dropped jump in finally analysis. (<i>Thanks lee_zhou</i>)
+<li>Reduce emission of uneccessary break/continue statements.
+<li>Fix an issue where obfuscated code with an odd unreachable jump structure can cause failure. (<i>Thanks testsubject</i>)
+<li>Fix spurious 'default' on static interface method. (<i>Thanks caoli</i>)
+</ul>
+
+<h4>0_120 <small>(<i>2017-03-07</i>)</small></h4>
+
+<ul>
+<li>Fix for loop in copy propagation (<i>Thanks dequis</i>)
+</ul>
+
+<h4>0_119 <small>(<i>2016-11-03</i>)</small></h4>
+
+<ul>
+<li>Improvements in scope handling (<i>Thanks pokechu22</i>)
+<li>Minor tweak to plugin runner interface (which I really should document)
+<li>Fix for NPE processing bad classpath directories. (<i>Thanks mkraus</i>)
+</ul>
+
+<h4>0_118 <small>(<i>2016-08-26</i>)</small></h4>
+
+<ul>
+<li>Optionally, (warn if applicable and you're unlucky enough to be using a case insensitive fs) rename classes to avoid MixED case clash (wuth --caseinsensitivefs true) (<i>Thanks testsubject, chases</i>)
+<li>Tidy up help. (<i>Thanks michaelf</i>)
+<li>Correctly specify explicit super calls to default interface methods (<i>Thanks dmitryp</i>)
+</ul>
+
+<h4>0_117 <small>(<i>2016-07-27</i>)</small></h4>
+
+<ul>
+<li>--elidescala helper option to make reading decompiled scala easier by removing serialVersionUID and ScalaSignature (may help in other languages).   (<i>Thanks sarahg</i>)
+</ul>
+
+<h4>0_116 <small>(<i>2016-07-11</i>)</small></h4>
+
+<ul>
+<li>Fix for nested lambdas (<i>Thanks abec</i>)
+<li>Fix bracketing for lambda precedence, improvement to use of method references.
+<li>Basic support for runtime visible type annotations (currently on local variables, not on pure expressions) (<i>Thanks abec</i>)
+<li>Fix for NPE handling bad annotations.
+<li>Tweak to finally detection.
+<li>Don't remove nested anonymous array qualifiers when assignment target is of incorrect arity. (<i>Thanks abec</i>)
+</ul>
+
+<h4>0_115 <small>(<i>2016-03-08</i>)</small></h4>
+
+<ul>
+<li>Bugfix to finally analyser (<i>thanks thelaser</i>)
+<li>Improvement to JSR analysis to untangle some simple deliberate obfuscations (<i>thanks sun</i>)
+<li>Diagnostic comment when we lose an exception.
+<li>Support '--clobber' to avoid overwriting files.  (defaults to true). (<i>thanks dloyall</i>)
+</ul>
+
+<h4>0_114 <small>(<i>2016-02-26</i>)</small></h4>
+
+<ul>
+<li>Fix an NPE. (<i>thanks sun</i>)
+<li>Fix for a stack overflow in copy propagation on a handwritten edge case. (<i>thanks sun</i>)
+</ul>
+
+
+<h4>0_113 <small>(<i>2016-02-17</i>)</small></h4>
+
+<ul>
+<li>Fixed issue with incorrectly parsing a Stack map attribute.  (<i>thanks sun</i>)
+</ul>
+
+<h4>0_112 <small>(<i>2016-02-16</i>)</small></h4>
+
+<ul>
+<li>Fix for variable clash resolution which could lead to parse error.  (<i>Thanks knotovna</i>)
+</ul>
+
+<h4>0_111 <small>(<i>2016-02-11</i>)</small></h4>
+
+<ul>
+<li>Improvement in array type collision resolution (<i>thanks abec</i>)
+<li>Improvement to plugin runner (<i>thanks sun</i>)
+<li>Handle illegal identifiers in obfuscated enums. (<i>thanks krisa</i>)
+<li>Allow recovery of obfuscated enum identifiers (where name text and field don't match) <!-- ~/downloads/p.class -->
+</ul>
+
+<h4>0_110 <small>(<i>2015-11-18</i>)</small></h4>
+
+<ul>
+<li>Tweak to finally detection for case blocks.
+</ul>
+
+<h4>0_109 <small>(<i>2015-11-17</i>)</small></h4>
+
+<ul>
+<li>Improvement to ident naming clashes.
+<li>Fix issue where iterator reconstruction would be applied uneccesarily.
+<li>Tweak to check if aggressive exception aggregation improves things (fallback pass).
+<li>Improve type detection (note - I'm <em>still</em> avoiding using type tables etc.  This is a conscious choice - they can be faked with possible obfuscation).
+<li>Fix for an illegal forward reordering in some for loop detection.
+<li>Check raw (stack type int) type is implicitly castable on return (<i>Thanks thedmitriyk</i>).
+</ul>
+
+<h4>0_108 <small>(<i>2015-10-15</i>)</small></h4>
+
+<ul>
+<li>Fix to dead node removal (led to exception analysing some classes of finally statement)
+<li>Tweaks to finally analysis (<i>thanks abec</i>)
+<li>If reconstructed string switch is on a literal null, force explicit cast (&quot;)
+<li>Tidy imports (<i>thanks rillig</i>)
+<li>Fix issue with assert detection. (&quot;)
+<li>Improve names on certain FP constants (&quot;)
+<li>Force RHS of shift ops to int, if type is indeterminate from elsewhere. (&quot;)
+</ul>
+
+<h4>0_107 <small>(<i>2015-10-10</i>)</small></h4>
+
+<ul>
+<li>Split lifetimes if final type misdetected as reference due to clash.
+<li>Fix bug allowing primitive arrays in constructor to be lifted erroneously. (<i>thanks rillig</i>)
+<li>Tidy arguments/errors.
+</ul>
+
+<h4>0_106 <small>(<i>2015-10-02</i>)</small></h4>
+
+<ul>
+<li>Allow reference placeholders to be treated as arrays. (Strange, but allows some otherwise failing <a href="http://www.kotlinlang.org">Kotlin</a> code to decompile)
+<li>Option to allow code to be aggressively pulled into case statements.  Not enabled by default/recovery yet (useful for Kotlin)
+<li>Improve assertion normalisation. (<i>thanks abec</i>)
+<li>Make push through goto slightly more aggressive.
+<li>Allow unstructured gotos to be nopped if they fall into successor in same block (pass 4).
+<li>Move if body to after else, if else has no exits, and if has foreign entrants which would cause issues.
+</ul>
+
+<h4>0_105 <small>(<i>2015-09-20</i>)</small></h4>
+
+<ul>
+<li>Fix for incorrect target on jsr_w (<i>thanks esnow</i>)
+</ul>
+
+<h4>0_104 <small>(<i>2015-09-17</i>)</small></h4>
+
+<ul>
+<li>Small improvement to conditional aggregation.  (<i>thanks thelaser</i>)
+<li>Poison hidden iterators when rebuilding for (x:...)
+<li>Tweak to demorgan conditional simplifier to take precedence into account when working out best representation.
+<li>Fix asymmetry in some cases of basic block collapse.
+</ul>
+
+<h4>0_103 <small>(<i>2015-09-11</i>)</small></h4>
+
+<ul>
+<li>Improve bad cast chains (if a crazy cast via 'Object' is required') (<i>thanks abec</i>)
+<li>Don't discard necessary extra casts with lambda methods (&quot;&quot;)
+<li>Fix for some cases where switch literals weren't detected from bool->int (&quot;&quot;)
+<li>Fix for bad names with literals not in the identifier set (&quot;&quot;)
+<li>Add --extraclasspath to allow helper jars to be searched for analysis (<i>thanks jozko</i>)
+</ul>
+
+<h4>0_102 <small>(<i>2015-08-03</i>)</small></h4>
+
+<ul>
+<li>Handle unknown bootstrap metafactories more gracefully
+<li>Take lambda variables into account when assigning names (<i>thanks wbeuchner</i>)
+<li>Fix for preop >>= being displayed incorrectly in some circumstances. (<i>thanks jhadrava</i>)
+<li>Attempt to remove spurious returns from clinit, as it leads to illegal java. (<i>thanks rbalerdi</i>)
+</ul>
+
+<h4>0_101 <small>(<i>2015-05-18</i>)</small></h4>
+
+<ul>
+<li>Fix for wildcards in some inappropriate places (<i>thanks (again!) abec</i>)
+<li>Bad catch name in some cases
+<li>Fix some NPEs (edge case with missing dependency, edge anonymous array rewrite) (<i>thanks choonster</i>)
+<li>Fix some missing WIDE opcode handling (you need a LOT of locals to trigger that!) (<i>thanks alexnguyen</i>)
+</ul>
+
+<h4>0_100 <small>(<i>2015-04-15</i>)</small></h4>
+
+<i>beta 100! I promise, I'll release a verision 1 at some point, when I'm happy with the code!!</i>
+
+<ul>
+<li>Fix for explicit constpool literals (not initialised by code) being displayed as int when they could be narrowed to bool. <i>(thanks abec, malter)</i>
+<li>Helpful little tweak to cause CFR to emit more descriptive local names, by <em>optionally</em> triggering the illegal name rewriter when variable names are less than a certain size (see --renamesmallmembers).  (<i>idea from xryl</i>)
+<li>Fix for regression in which cast -> ConstantPoolEntryMethodRef exception is thrown. (<i>thanks adamp</i>)
+<li>Fix for --renamedupmembers failing when some base classes don't exist
+</ul>
+
+<h4>0_99 <small>(<i>2015-03-25</i>)</small></h4>
+
+<ul>
+<li>Handle <i>enormous</i> code blocks better, by aggressively applying semantically safe but destructive transforms, such as removing ignored stores, to simplify static assignment analysis.  (Controlled with --aggressivesizethreshold, defaults to 15000 instructions.) (<i>thanks vbabenko</i>)
+<li>Better error reporting for illegal bytecode. (<i>thanks dpetrashko</i>)
+<li>Improvements to missing disambiguation casts when using explicit nulls (<i>thanks abec</i>)
+</ul>
+
+<h4>0_98 <small>(<i>2015-03-09</i>)</small></h4>
+
+<ul>
+<li>Fix for inverted condition on empty while loops with a special case structure (<i>thanks abec</i>)
+<li>Fix for explicit null callees  (<i>thanks abec</i>)
+</ul>
+
+<h4>0_97 <small>(<i>2015-02-25</i>)</small></h4>
+
+<ul>
+<li>Fix for some missed loops.  (<i>Thanks rossmck</i>)
+<li>Fix for some bad naming collisions, over aggressive imports. (<i>Thanks malter</i>)
+</ul>
+
+<h4>0_96 <small>(<i>2015-02-10</i>)</small></h4>
+
+<ul>
+<li>Tweak disambiguated variable names so they won't collide with methods (<i>Thanks abecker</i>)
+<li>Fix for missed detection of an anonymous array initialiser (<i>Thanks maxl</i>)
+</ul>
+
+<h4>0_95 <small>(<i>2015-01-27</i>)</small></h4>
+
+<ul>
+<li>Fixes for some incorrect @Overrides
+<li>Normalise some parse trees, to improve detection of some assert patterns.
+<li>Improvements to bad member name detection - see <a href="obfuscation_method_renaming.html">this</a>.  Examples <a href="https://bitbucket.org/lab27/cfr_tests/src/96963473c90099a4411a157bb7c58e013d62a8b8/hardcoded_class_files/bad_desc/v5_interfaces/baddesc.jar?at=master">here</a> and <a href="https://bitbucket.org/lab27/cfr_tests/src/96963473c90099a4411a157bb7c58e013d62a8b8/hardcoded_class_files/bad_desc/v7_covariance/badcovar.jar?at=master">here</a>.  Use --renamedupmembers true to enable. (<i>Thanks abecker</i>)
+</ul>
+
+<h4>0_94 <small>(<i>2015-01-10</i>)</small></h4>
+
+<ul>
+<li>Small improvement to restructuring of breaks.
+<li>Fix to daft unicode regression in 0_93 leaving trailing unicode marker on extracted jar content. (<i>thanks abecker</i>)
+</ul>
+
+<h4>0_93 <small>(<i>2015-01-08</i>)</small></h4>
+
+<ul>
+<li>If a goto can be transformed into a break of the tightest breakable block - do so.
+<li>Better handling of type names when renaming duplicate members. (<i>thanks abecker</i>)
+<li>Detect and offer to rename <a href="obfuscation_illegal_identifiers.html">illegal identifiers</a> (illegal idents in local variables are always dropped).
+<li>Handle pre 1.0 java class files. (But warn, as your recompilation with a modern compiler is unlikely to be compatible!)
+</ul>
+
+<h4>0_92 <small>(<i>2014-12-18</i>)</small></h4>
+
+<ul>
+<li>Improve topsort - if there's an orphan block, force it early.
+<li>Fix bad chained goto removal, where it appears to leave an uneccessary loop.
+<li>Remove references to labelled blocks if a labelled block break would end up in the same place as a natural scoped break.
+<li>Reduce goto chain condensing in the presence of break statements.
+<li>Handle (Only if explicitly selected) <a href="obfuscation_field_renaming.html">duplicate field names</a> (<i>thanks cliffh</i>)
+</ul>
+
+<h4>0_91 <small>(<i>2014-12-05</i>)</small></h4>
+
+<ul>
+<li>Allow jar processing to take a regex of which classes to extract (--jarfilter)
+<li>Tidy errors
+<li>Push returns early when reordering to make control flow as simple as possible.  Explicit support for ternaries which jump into identical returns. (improves quality of some dex2jar code).
+<li>Shrink catch block if it's over aggressive.
+<li>Improve trailing goto removal once code at structurable stage.
+<li>Handle conditionals that jump straight into a fall through (was leaving a goto)
+<li>Don't allow static initialiser to be marked as an override (oops!)
+</ul>
+
+<h4>0_90 <small>(<i>2014-11-05</i>)</small></h4>
+
+<ul>
+<li>Fix issue where aggressive conditional to return pushing was dropping a side effect, when inside a block with a finally clause.
+<li>Fix over extension of switch contained in finally affected block, leading to default block adopting code outside switch.  (<i>thanks abec</i>)
+<li>Fix case where unbound generic with no typing info could suggest a variable name of '$'.
+</ul>
+
+<h4>0_89 <small>(<i>2014-10-29</i>)</small></h4>
+
+<ul>
+<li>Improvements to SSA analysis (see <a href="https://bitbucket.org/lab27/cfr_tests/src/474d84028e0d158f1902d0f8cc5b1a4a5c33df10/src/org/benf/cfr/tests/IncrTest5.java?at=master">IncrTest5</a>, <i>thanks hgraf</i>).
+<li>(minor) improvement to handling some obfuscated switches which caused failure. (<i>thanks abec</i>)
+</ul>
+
+<h4>0_88 <small>(<i>2014-10-04</i>)</small></h4>
+
+<ul>
+<li>Don't force parameter type - allow parameters to be displaced in code. (<i>Thanks lefevrol</i>)
+<li>Improve explicit generics for java 1.6 function args
+<li>Cope (but not particularly well yet) with groovy invokedynamics. (<i>Thanks franze</i>)
+<li>Fix issue where explicit classfile permissions are more generous than inner class permissions.
+<li>Explicit cast if we're returning a generic place holder.
+<li>Fix uneccessary redundant bracing
+<li>Fix a precedence issue
+<li>Check for correct overload calling POST erasure - means less explicit argument casting.
+<li>Explicit final on loop iters, when forced by inner class usage
+<li>Change placeholder binding collision policy
+<li>Fix possible illegal rewrite of ternaries when de-inlining assignments
+<li>Improve synthetic accessor rewriter.
+<li>Feed back type information from detected loops
+<li>Extract aggressive inlining of assignments, if it can no longer help simplifying code
+<li>Tidy statics so we use simple name where possible
+<li>Fix bad type on unused null argument
+<li>Attempt to resolve any outstanding type clashes at scope discovery time
+</ul>
+
+<h4>0_87 <small>(<i>2014-08-18</i>)</small></h4>
+
+<ul>
+<li>Rewrite variable definitions if anonymous inners are inadvertently causing scope hiding.
+<li>Better guess for anonymous inner types.
+<li>Don't remove unused function args from ident set, as it causes them to have ugly idents set (and causes bad behaviour with jre8's <i><a href="https://bugs.openjdk.java.net/browse/JDK-8046085">broken</a> (still in the wild, alas)</i> HashMap implementation.) (<i>Thanks srborlongan</i>).
+</ul>
+
+<h4>0_86 <small>(<i>2014-08-15</i>)</small></h4>
+
+<ul>
+<li>Fix precedence issue on instanceof.
+<li>Tidy some character quoting where I \uXXXX unicode instead of simple char literals.
+<li>Improve the way outer class this references are processed - more efficient.
+<li>Hide inner class friend helper classes (see <a href="inner-class-fake-friends.html">fake friendship</a>).
+<li>Remove some illegal wildcards when generating LValue types.
+<li>Handle empty switches better - don't always remove them, as that leaves odd code lying around in switch-on-enum case.
+<li>Better inferrence of final for anonymous class outer references.
+<li>Improvements to implicit cast checking.
+</ul>
+
+<h4>0_85 <small>(<i>2014-08-10</i>)</small></h4>
+
+<ul>
+<li>Fix bug which could cause some switch-on-enum statements not to be resugared.
+<li>Fix issue with possible unstructured break on switch.
+</ul>
+
+<h4>0_84 <small>(<i>2014-08-08</i>)</small></h4>
+
+<ul>
+<li>Fixed issue causing failure of lambda methods with > 127 captures. (<i>Thanks srborlongan</i>).
+</ul>
+
+<h4>0_83 <small>(<i>2014-08-08</i>)</small></h4>
+
+<ul>
+<li>Fix some false sharing scenarios.
+<li>Handle even more complex conditionals with ludicrous inline assignment. <a href="https://bitbucket.org/lab27/cfr_tests/src/64a966994c01c7e84fb6b627a6e5f841f3ebc728/src/org/benf/cfr/tests/ShortCircuitAssignTest4e.java?at=master">ShortCircuitAssignTest4e</a>(!).
+<li>Fix issues with ugly code from early-detected ternaries
+<li>Allow for loops to capture multiple updates, (but only if they're involved in the predicate, for cleaner code.  Override with --forloopaggcapture to capture all possible updates).
+<li>Fix bug whereby conditionals were being too aggressively merged.
+<li>Other improvements to conditional merging.
+</ul>
+
+<h4>0_82 <small>(<i>2014-07-26</i>)</small></h4>
+
+<ul>
+<li>Yet more fixes for nasty topsort edge cases (again, mostly exhibited in dex2jar).
+<li>Improve error when magic is wrong.
+<li>Allow force class/jar.
+</ul>
+
+<h4>0_81 <small>(<i>2014-07-19</i>)</small></h4>
+
+<ul>
+<li>Only enable rolling returns up to conditional if necessary in recovery pass. (or manually selected)
+<li>Another dex2jar optimisation - handle conditionals which jump into middle of <i>later</i> conditionals - if the latter can be rewritten as a block escape. (<i>Thanks MCirsta</i>)
+<li>Minor formatting improvements.
+</ul>
+
+<h4>0_80 <small>(<i>2014-07-07</i>) ... been a while!</small></h4>
+
+<ul>
+<li>Switch fixes
+<li>Improve top sort block emission - allow emission when not all sources satisfied, if it would cause us to save known block ordering
+<li>Several improvements for dex'd code ( <i>thanks pcreath</i> )
+<li>Fix bug with overly aggressive push-through-goto
+<li>Enable tautology conditional recovery pass - will slice out comparisons which are tautologies and move the jump back as far as possible.
+<li>Fix for dup2_x2 sometimes generating weird assignments. ( <i>thanks jmcgowan</i> )
+<li>Lots of code refactoring...
+</ul>
+
+
+<h4>0_79 <small>(<i>2014-04-19</i>)</small></h4>
+
+<ul>
+<li>Handle dex2jar style finally (where try blocks jump between each other, and non-throwing content is often outside a try regime) (<i>Thanks pcreath</i>)
+<li>Fix for bug in copy propagation (<i>Thanks jmcgowan</i>)
+</ul>
+
+<h4>0_78 <small>(<i>2014-03-28</i>)</small></h4>
+
+<ul>
+<li>Fix for NPE regression when displaying some missing anonymous inner classes. (<i>Thanks atanasn</i>)
+<li>For for type being displayed as null. (<i>Thanks jarrkos</i>)
+<li>Minor improvement to type inference.
+<li>Tweaks to boxing for nicer output.
+</ul>
+
+<h4>0_77 <small>(<i>2014-03-26</i>)</small></h4>
+
+<ul>
+<li>Fix missing labels on switch statements when necessary for block-break. (<i>Thanks nilsandre</i>)
+<li>Fix typing issue with some argument types. (<i>Thanks jarrkos</i>)
+<li>Misc improvements to labelled block breaks.
+</ul>
+
+<h4>0_76 <small>(<i>2014-03-17</i>)</small></h4>
+
+<ul>
+<li>Remove spurious getClass generated <a href="java8lambda_instancemethodref_getclass.html">by instance lambda in later java 8s</a>.
+</ul>
+
+<h4>0_75 <small>(<i>2014-03-17</i>)</small></h4>
+
+<ul>
+<li>Fix for missing annotations on fields.
+</ul>
+
+<h4>0_74 <small>(<i>2014-03-17</i>)</small></h4>
+
+<ul>
+<li>Now that java 8 correctly fills in lambda arg names, trust them a little more. (<i>Thanks mstrobel</i>)
+<li>Remaining untranslated stack vars get turned into locals.
+<li>Improve cast insertion logic around generic wildcarding, generic arrays.
+</ul>
+
+<h4>0_73 <small>(<i>2014-03-12</i>)</small></h4>
+
+<ul>
+<li>Handle trailing dead bytecode at the end of methods. (<i>Thanks mcirsta</i>)
+<li>Fix small issue where some post-operations weren't recognised, leaving annoying temporaries. (<i>Thanks mkiersch</i>)
+</ul>
+
+<h4>0_72 <small>(<i>2014-03-11</i>)</small></h4>
+
+<ul>
+<li>Fixed (one) issue with structured goto removal. (<i>Thanks jarrkos</i>)
+<li>Fixed regression with standalone inner class analysis. (String exception)
+<li>Fix for exception when performing some cases of try block merging.
+</ul>
+
+<h4>0_71 <small>(<i>2014-03-10</i>)</small></h4>
+
+<ul>
+<li>Fix type promotion issue. (<i>Thanks jarrkos</i>)
+</ul>
+
+<h4>0_70 <small>(<i>2014-03-09</i>)</small></h4>
+
+<ul>
+<li>Improvement to time complexity in boxing removal and alias removal. (<i>Thanks nnelous</i>)
+<li>Fix for uneccessary fully qualified types in enum arguments
+<li>Fix for chained enum constructors.
+</ul>
+
+<h4>0_69 <small>(<i>2014-03-06</i>)</small></h4>
+
+<ul>
+<li>Fix for precedence issue on locally casted field access.
+<li>Handle possible CannotLoadClass exception for scala style bytecode.
+<li>Change inner class name processing logic - handles scala style inner classes better. (<a href="https://bitbucket.org/lab27/cfr_tests/src/d4b794059c285e23125758e39714e6499d3e7a79/src/org/benf/cfr/tests/DolTest3.java?at=master">Here's an icky test.... </a>)  (<i>Thanks leat</i>)
+</ul>
+
+
+<h4>0_68 <small>(<i>2014-02-21</i>)</small></h4>
+
+<ul>
+<li>Another small change to exception block extension.
+</ul>
+
+<h4>0_67 <small>(<i>2014-02-20</i>)</small></h4>
+
+<ul>
+<li>Improvement to topsort heuristics, significantly improves handling of some dex2jar output. (<i>Thanks pcreath</i>)
+<li>Improvement to impossible exception block extension. (Allows statements to be brought inside an exception block if this can't affect semantics).
+</ul>
+
+<h4>0_66 <small>(<i>2014-02-19</i>)</small></h4>
+
+<ul>
+<li>Fix for precedence issue.
+</ul>
+
+<h4>0_65 <small>(<i>2014-02-18</i>)</small></h4>
+
+<ul>
+<li>Resugar java 1.4 class constants (did you know they did <a href="java4classconstants.html">this</a>?)
+<li>Change java.lang imports to hidden by default (controlled with --hidelangimports)
+<li>Honour old Synthetic attribute.
+</ul>
+
+<h4>0_64 <small>(<i>2014-02-16</i>)</small></h4>
+
+<ul>
+<li>Fix regression in 0_63, when backjump occurs to target of forward jump labelled-goto.
+</ul>
+
+<h4>0_63 <small>(<i>2014-02-14</i>)</small></h4>
+
+<ul>
+<li>Fix integral cast missing explicit promotion.
+<li>Fix for unsupported operation exception on bad inner class info.
+<li>Tidy float output.
+<li>Fix for bad type inference in some boolean ops.
+<li>Labelled blocks (to support fake-goto) <i>I've been holding off on this because it allows output which could be improved by reordering, but I guess it's time</i>.
+<li>Fix incorrect preop output.
+<li>Tweak int^-1 -> ~int.
+<li>Tidy up help display.
+</ul>
+
+<h4>0_62 <small>(<i>2014-02-13</i>)</small></h4>
+
+<ul>
+<li>Remove bad backjumps to exception handlers when topsorted - shouldn't be valid, but seen in obfuscated (or dex2jar!!) code. (<i>Thanks pcreath</i>)
+<li>Fix for incorrect variable scoping in exception handlers (<i>Thanks jarrkos</i>)
+<li>Finally implemented more sensible precedence handling, eliminates lots of redundant braces, and fixes precedence bug on casting. (<i>Thanks jarrkos</i>)
+</ul>
+
+<h4>0_61 <small>(<i>2014-02-05</i>)</small></h4>
+
+<ul>
+<li>Fix issue with overlapping but non-nested while loops causing exception. (generally when final backjump to earlier loop is a continue, and end of earlier loop is break; while(true), meaning it appears to have a shorter scope)
+</ul>
+
+<h4>0_60 <small>(<i>2014-01-29</i>)</small></h4>
+
+<ul>
+<li>Fix for switch incorrectly marking some sources of break targets as breaks, leading to unstructured output.
+<li>Fix for missing assert pattern (some cases of assert not resugared).
+<li>Normalise try blocks to improve conditional detection.
+<li>Recover from out of order constructor parameters (warn in comment if this happens).
+<li>Tweak argument help (--help xxx)
+</ul>
+
+<h4>0_59 <small>(<i>2014-01-16</i>)</small></h4>
+
+<ul>
+<li>Improve classification of some escapes from catch blocks. (<i>Thanks chrixian</i>)
+<li>Stack discovery is no longer recursive, to avoid blowup on <i>Humungous</i> stack walks
+<li>Work around for file names FS can't support due to length. (<i>Thanks SvenB</i>)
+<li>Fix NPE on while-as-for detection.
+<li>Fix annotation enum values display.
+<li>Significant internal tidying of recovery passes.
+<li>Added iterative fallback passes, with more aggressive options.
+<li>Added (pretty desparate if we get here!) monitor commenting fallback. (significantly improves readability of some nastier dex2jar output).
+<li>Fix issue where unstructured code was failing to display a block.
+<li>Minor fixes to synchronized block handling.
+</ul>
+
+<h4>0_58 <small>(<i>2013-12-19</i>)</small></h4>
+
+<ul>
+<li>Interface for plugin use
+<li>Push literal manipulations when in recovery
+<li>Gracefully handle messed up Scala signatures.  Multiple improvements to allow better emission of ScalaJava.
+<li>Finally decode unicode literals nicely.  (or leave it as it was with - <font face="monospace">--hideutf false</font>)
+<li>Fix (oops!) instance of English spelling of synchroni(S|Z)ed. (<i>Thanks Jwalter</i>)
+<li>Be more lenient when removing array indirection - helps recover when we've incorrectly merged stackvars.
+<li>Fix instances of loops at top of case statements emitting Duff's device!
+<li>Rebuild switch blocks after forcing a topsort.
+</ul>
+
+<h4>0_57 <small>(<i>2013-12-10</i>)</small></h4>
+
+<ul>
+<li>Fix bug caused by agressive 'through jump' pushing (regression in 0_53). (<a href="https://bitbucket.org/lab27/cfr_tests/src/6ed10fd6eb8adb5452b86872527b5a65c45fba5a/src/org/benf/cfr/tests/LoopTest47.java?at=master">LoopTest47</a> - <i>Thanks chrixian</i>)
+</ul>
+
+<h4>0_56 <small>(<i>2013-12-09</i>)</small></h4>
+
+<ul>
+<li>Improve switch block contiguity checking
+<li>Improve finally handling
+<li>Allow LDC through aggressive synchronised exit removal.
+<li>Avoid stack overflow on odd Scala anonymous classes
+<li>Handle dodgy Scala generic signatures (If you want ScalaJava<sup>tm</sup> ;) )
+<li>Improve aggressive exception aggregation
+<li>Display multiple cases in a more sane way.
+</ul>
+
+<h4>0_55 <small>(<i>2013-12-05</i>)</small></h4>
+
+<ul>
+<li>Default iterated loop resugaring to java 5 (!), as a lot of test classes which require it are marked as 49.
+<li>Admit in comments/summary.txt when we emit orphaned catch blocks.
+<li>Much more aggressive exception block aggregation/expansion, in cases where we can <i>prove</i> the adopted instructions can't change semantics.
+<li>Recovery enables lenient flag, to allow wierdly ordered exception handlers to get sorted.
+</ul>
+
+<h4>0_54 <small>(<i>2013-11-29</i>)</small></h4>
+
+<ul>
+<li>Fix regression - when moving blocks through a goto, update block start information - (otherwise a break out of a loop was being left as a GOTO, leading to unstructured code/fallback sorting.
+<li>Fix stack overflow where a local class returns a new instance of itself.
+</ul>
+
+<h4>0_53 <small>(<i>2013-11-28</i>)</small></h4>
+
+<ul>
+<li>Fix bug which causes while loop to be pulled out of conditional in odd circumstances
+<li>Fix bug which inverts test when a block is switched in a topsort (again, odd circumstances, but... :P )
+</ul>
+
+<h4>0_52 <small>(<i>2013-11-28</i>)</small></h4>
+
+<ul>
+<li>Handle enums implementing interfaces.
+<li>Generate @Override annotations (<i>if</i> code was compiled for Java6+, and the class files for the super classes are available....)  Disable with --override false (or force earlier java with --override true, if you feel odd).
+<li>Remove support for disabling per method failure, unused.
+<li>Tidy up errors a bit
+</ul>
+
+<h4>0_51 <small>(<i>2013-11-27</i>)</small></h4>
+
+<ul>
+<li>More minor typing issues
+<li>Local classes were being treated as anonymous - oops!  Pull out local classes correctly, define in as tight a scope as possible.  (interesting tests <a href="https://bitbucket.org/lab27/cfr_tests/src/8305795a2d56cc05638b92f19f3456d94c63e500/src/org/benf/cfr/tests/InnerClassTest28.java?at=master">InnerClassTest28</a> &amp; <a href="https://bitbucket.org/lab27/cfr_tests/src/8305795a2d56cc05638b92f19f3456d94c63e500/src/org/benf/cfr/tests/InnerClassTest25.java?at=master">InnerClassTest25</a>)
+<li>Fix possible infinite loop on confused finally detection
+<li>Remove bad brace in enum definition (!) (<i>Thanks kkiehne</i>)
+</ul>
+
+<h4>0_50 <small>(<i>2013-11-26</i>)</small></h4>
+
+<ul>
+<li>Several more tweaks to handle the sheer horror that is eclipse.   Who needs an obfuscator?  Most CFR tests are now happy with eclipse.  (Some sync ones still grumpy)
+<li>Finally removed hack which stops (local) a = i[x], if (a) being rolled into the conditional if appropriate. (Was causing iterator loop rewriting to fail).
+<li>Misc control flow improvements to tidy dex2jar decompilation
+<li>Fix NPE where attempting to resolve a typeclash with incomplete information (output code will be odd but readable!)
+<li>Fix bug whereby a package-free class gets the class name as its package.  (oops.)  (<i>Thanks Adrian</i>)
+<li>Handle (one) case where topsorting introduces confusing ordering, and made things worse!
+</ul>
+
+<h4>0_49 <small>(<i>2013-11-23</i>)</small></h4>
+
+<ul>
+<li>Added --eclipse option to allow disabling of transforms which normalise eclipse output (enabled by default)
+<li>Fixed gnarly generic bug which failed to select (or selected non-deterministic) specific type instance for generic binding. (In rare circumstances!)
+</ul>
+
+<h4>0_48 <small>(<i>2013-11-22</i>)</small></h4>
+
+<ul>
+<li>Handle eclipse style loops. (step 1, more to go maybe!) (<i>Thanks nkniazev</i>)
+<li>--recover option stops any attempt to override with extra options in case of decompile failure. (more useful for me testing than anyone else ;)
+</ul>
+
+<h4>0_47 <small>(<i>2013-11-22</i>)</small></h4>
+
+<ul>
+<li>Fix for several NPEs with awkward dex2jar output.
+<li>Fix for orphaned block as a result of loop prettifying transform
+<li>Fix (regression from 0_42) instanceOf showing qualified name uneccesarily
+<li>Add intermediate jumps to fix topological sort losing direct relationships (fixes case where falling back to topsort causes method to fail decompilation entirely (dex2jar, again.... :P ))
+<li>Rework summary dumper, also display per method issues.
+<li>Allow non-adjacent exception ranges to aggregate where intervening instructions CANNOT throw. (fixes broken up try blocks in awkward-but-valid cases)
+<li>Weaken topsort heuristics for keeping blocks together (improves dex2jar switch output, when fall through cases are out of order)
+<li>Prefer inner class short names when shortening, otherwise we get fooled by <a href="https://bitbucket.org/lab27/cfr_tests/src/8a0bbb2836091fabb8558159df19cb26f774e5e7/src/org/benf/cfr/tests/InstanceOfTest1.java?at=master">inner classes</a>.
+</ul>
+
+<h4>0_46 <small>(<i>2013-11-20</i>)</small></h4>
+
+<ul>
+<li>Reduce overeager assignment into conditional rolling.  Much less ugly ;)
+<li>Fix small type inference errors where both sides are apparently constant, but one is later used as a variable.
+<li>When dumping a jar to file, write a summary of errors in PATH/summary.txt
+</ul>
+
+<h4>0_45 <small>(<i>2013-11-19</i>)</small></h4>
+
+<ul>
+<li>Fix over-eager assignment into conditional rolling, which caused a stack overflow with a recursive lvalue. (Rolling is still quite eager....) (<i>Thanks pcreath</i>)
+</ul>
+
+<h4>0_44 <small>(<i>2013-11-15</i>)</small></h4>
+
+<ul>
+<li>Fix issue with constructor arg for re-sugaring stringbuilder/stringbuffer construction. (<i>Thanks pcreath</i>)
+<li>StringBuilder/StringBuffer re-sugaring now correct for original compilation version, however can be explicitly enabled with [--stringbuilder true] and [--stringbuffer true]
+</ul>
+
+<h4>0_43 <small>(<i>2013-11-15</i>)</small></h4>
+
+<ul>
+<li>Significant refactoring of internal state, allows multiple decompilations to share work.
+<li>Jar dumping - specify a .jar, and it'll all come out! (also use --outputdir !!)
+<li>Output to director - eg --outputdir /tmp/javaherepls
+<li>Aggressive exception stripping (--forceexceptionprune) - removes pointless exception blocks for cleaner code.
+<li>Fallback analysis uses --forcetopsort, --forcexceptionprune
+<li>Significantly better JSR handling. (eg <a href="https://bitbucket.org/lab27/cfr_tests/src/e074d7ed6b7c35b5d087eedf6d315201beac821b/hardcoded_class_files/JsHurt4.class?at=master">JsHurt4.class</a>)
+<li>StringBuffer resugaring (i.e. same behaviour as StringBuilder)
+<li>Fix for bug of default value, where it's a class attribute.
+</ul>
+
+<h4>0_42 <small>(<i>2013-10-17</i>)</small></h4>
+
+<ul>
+<li>Added an aggressive topological sort when the code 'doesn't look right' (controlled with --forcetopsort, otherwise, it'll use <a href="faq.html#topsort">when appropriate</a>).  There's still work to do here, but it improves dex2jar output (somewhat, still issues).  If you find that significantly better code is generated by using <i>--forcetopsort false</i>, (which you shouldn't have to do!), please let me know! (<i>Thanks pcreath</i>)
+<li>Fixed silly separator issue which caused classpath issues on windows.  (<i>Thanks mmebane</i>)
+<li>Output tweaks - per method comment blocks, class comments etc (still playing with this, controlled with --comments to turn off, I prefer them on!)
+</ul>
+
+
+<h4>0_41 <small>(<i>2013-10-04</i>)</small></h4>
+
+<ul>
+<li>Improve eclipse style switch support (not completely there yet).
+<li>Fix crash on constructor rewrite bug
+<li>Add --dumpclasspath option for (heavy) debug
+<li>Fix for (very specific) eclipse style exception rewrite which causes backjumps
+</ul>
+
+<h4>0_40 <small>(<i>2013-10-02</i>)</small></h4>
+
+<ul>
+<li>Improved break detection in loop analysis.
+</ul>
+
+<h4>0_39 <small>(<i>2013-10-01</i>)</small></h4>
+
+<ul>
+<li>Improve assert code, where assert conditionals have been flipped. (so the assert-throw ends up as fall through).
+</ul>
+
+<h4>0_38 <small>(<i>2013-10-01</i>)</small></h4>
+
+<ul>
+<li>Fix minor issues with assert in inner classes (minor issue still exists if direction of test has flipped, will leave ugly code)
+<li>Fix crash if assert sugarer hits unstructured code
+</ul>
+
+<h4>0_37 <small>(<i>2013-10-01</i>)</small></h4>
+
+<ul>
+<li>Reduce spurious class analysis
+<li>Capture anonymous inner class outer local use
+</ul>
+
+<h4>0_36 <small>(<i>2013-09-26</i>)</small></h4>
+
+<ul>
+<li>Fix multi-catch (java 7) exceptions
+</ul>
+
+<h4>0_35 <small>(<i>2013-09-26</i>)</small></h4>
+
+<ul>
+<li>Several changes to type propagation - this may result in a few more seemingly uneccessary casts (until I find them!) - but allows varargs methods to be better desugared, and improves bad overloading rewrites.
+<li>Lambda serialisation / altMetaFactories support added. (Some info <a href="java8lambda_serialisation.html">here</a>.) <i>Thanks srborlongan again!</i>
+<li>Format tidying
+<li>Fix bug on string constant overflowing signed short size
+<li>Fix string quoting bug
+<li>Improve type inference (esp for lambdas)
+</ul>
+
+<h4>0_34 <small>(<i>2013-09-13</i>)</small></h4>
+
+<ul>
+<li>Don't remove stack variable alias if it's needed inside comparison.  (this is a sign that the decompilation hasn't quite managed to condense a complex conditional with inline assignments down to a single line).
+<li>Some flavours of empty catch blocks were causing decompiler to bail early.
+</ul>
+
+
+<h4>0_33 <small>(<i>2013-09-12</i>)</small></h4>
+
+<ul>
+<li>Fix to bug which nopped out self mutating replacement candidates.
+</ul>
+
+<h4>0_32 <small>(<i>2013-09-12</i>)</small></h4>
+
+<ul>
+<li>Fix bad pre-mutation
+<li>Don't needlessly up-promote types on comparison (stops chars being promoted to int)
+<li>Better use of continues in for loops
+<li>Tidy up single method dumping
+<li>Pathological loop improvements
+<li>Allow array lvalue alias replacement (fixes many Short circuit tests).
+</ul>
+
+<h4>0_31 <small>(<i>2013-09-10</i>)</small></h4>
+<ul>
+<li>Some improvements to flow which will allow me to match final-with-resources (c# using)
+<li>Some scope improvements
+<li>Partial failure.  If only to stop Mike (<a href="https://bitbucket.org/mstrobel/procyon/wiki/Java%20Decompiler">Procyon</a>) from moaning ;)
+<li>Better classpatch searching.
+<li>broke the meg jar barrier :(  Time to clear out some dead code!
+</ul>
+
+<h4>0_30 <small>(<i>2013-08-29</i>)</small></h4>
+
+<ul>
+<li>Improvements to lifetime knowledge
+<li>Improvements to gnarly conditionals.  Really gnarly ;)
+<li>Correct minimal type for scope sharing objects.
+</ul>
+
+
+<h4>0_29 <small>(<i>2013-08-27</i>)</small></h4>
+
+<ul>
+<li>Removed hardcoded String knowledge, as it stopped String resolving, breaking string lambdas!
+<li>Improvements in local variable sharing - not quite right yet as we don't correctly deduce minimal
+type for objects which share scope, (you see !! in output... ) ... fixed soon!
+</ul>
+
+<h4>0_28 <small>(<i>2013-08-21</i>)</small></h4>
+
+<ul>
+<li>Fix issue with finally rewriting stripping returns
+<li>Construction changes, to cope better with handwritten bytecode.
+<li>Missing annotation display on interface class fixes
+<li>Fix issue with dumping raw dynamic methods in j8 103+
+<li>Fix for unordered attributes causing output to change.
+</ul>
+
+
+<h4>0_27 <small>(<i>2013-08-19</i>)</small></h4>
+
+<ul>
+<li>Rewrite of the finally extraction code - there are still some edge cases where it struggles with nested finallys, but on the whole it behaves better.
+<li>Lambda detection now also handles post beta 1.0.8-103 lambdas (Where MethodType is now used instead of MethodHandle, amongst other things).  <i>Thanks srborlongan</i> (Java behaviour change documented <a href="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=8019635">http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=8019635</a> )
+<li>Prefer local files over classpath (doh!) - otherwise if you're decompiling a hacked version of a standard library, you get the original! <i>Thanks matteoceccarello</i>
+</ul>
+
+<h4>0_26 <small>(<i>2013-08-09</i>)</small></h4>
+
+<ul>
+<li>Another exception + looping improvement -
+<a href="https://bitbucket.org/lab27/cfr_tests/src/0a440a963983cd4651422b59ecb85d7a3bad736b/src/org/benf/cfr/tests/ExceptionTestFinally19f.java?at=master">this test case</a> is pretty fun.
+</ul>
+
+<h4>0_25 <small>(<i>2013-08-09</i>)</small></h4>
+
+<ul>
+<li>Fix regression which breaks optimised sable test
+<li>When file isn't in logical location, infer class path alterations. (Will truncate directory at 'best' point in class path, and search from there for non jar files).
+<li>Be more graceful handling missing files.
+<li>Fix bad test on finally rewriter
+<li>Improvements for empty if blocks
+</ul>
+
+<h4>0_24 <small>(<i>2013-08-07</i>)</small></h4>
+
+<ul>
+<li>Fairly significant improvements to finally handling.
+</ul>
+
+<h4>0_23 <small>(<i>2013-08-02</i>)</small></h4>
+
+<ul>
+<li>More minor exception improvements - fix bad try resizes
+<li>Fix ref<-null chaining crash
+</ul>
+
+<h4>0_22 <small>(<i>2013-08-01</i>)</small></h4>
+
+<ul>
+<li>Minor exception improvements
+<li>Fix silly inner class OOB error
+<li>display char switches as char (oops!)
+</ul>
+
+<h4>0_21 <small>(<i>2013-07-30</i>)</small></h4>
+
+<ul>
+<li>(un)Boxing improvements, casting improvements.  Still generates too many casts!
+<li>Bugfixes for pathological loop cases
+<li>Improved type information (still not using localTypeTable, deliberately! I'll probably add it as an extra source soon, but I want to see how far I can get without it, as it seems a really easy obfuscator vector)
+<li>Fix to static inner decomp
+<li>Improved inlining
+<li>Removal of redundant artifacts
+<li>Overbracketing a bit now... :( to be fixed....
+</ul>
+
+<h4>0_20 <small>(<i>2013-07-11</i>)</small></h4>
+
+<ul>
+<li>Fix for NPE where LocalName table exists, but misses bottom.
+<li>Inlining and hiding of synthetic ++,-- mutators.
+</ul>
+
+<h4>0_19 <small>(<i>2013-07-10</i>)</small></h4>
+
+<ul>
+<li>Further improvements re outer reference accessor (fake friend) inlining (a few left!)
+<li>Fix crash on anonymous enum implementation
+<li>improvements to anonymous classes (more to do).
+<li>fix regression on binding array supers
+<li>Array constant member improvements
+<li>Tweak to stringbuilder to make it more fussy
+<li>Sugar boxing (in places).
+</ul>
+
+<h4>0_18 <small>(<i>2013-07-04</i>)</small></h4>
+
+<ul>
+<li>More Improvements to lambda support...
+<li>Inlining of inner to outer references - both access and mutation - hides inlined synthetic accessors.
+<li>Boxing resugaring
+</ul>
+
+<h4>0_17 <small>(<i>2013-07-02</i>)</small></h4>
+
+<ul>
+<li>Improvements to lambda support, :: accessor.
+<li>(at last!) correctly named outer scope accessors - removal of nested outer scope accessors.
+<li>Improvements to generated imports.
+</ul>
+
+<h4>0_16 <small>(<i>2013-06-27</i>)</small></h4>
+
+<ul>
+<li>Casting improvements
+<li>Allow loading when given a package name rather than a path.
+<li>Allow 'bad java' exception blocks (helps with obfuscated code)
+<li>Slight improvement to finally processing.
+</ul>
+
+<h4>0_15 <small>(<i>2013-06-11</i>)</small></h4>
+
+<ul>
+<li>Improvement to scope discovery
+<li>Fix regression caused by missing dependencies - (now continues, just with less information)
+<li>Better testing for superclass assignment (i.e assign B(extends A) and C(extends A) to a local variable with no type info).  Still some work to do here re unused locals with super assignments (which common class to chose?)
+</ul>
+
+<h4>0_14 <small>(<i>2013-05-30</i>)</small></h4>
+
+<ul>
+<li>Assert resugaring (disable with --sugarasserts false)
+<li>Significant improvements in unbound generic handling, push known type bindings back to creations (part 1)
+<li>Remove ternary temporaries
+<li>Change how imports are generated - significantly reduce spurious imports
+<li>Better use of CHECKCAST instruction
+<li>Split out tests (smaller jar, and tests can use java 7/8 now).
+</ul>
+
+<h4>0_13 <small>(<i>2013-05-16</i>)</small></h4>
+
+<ul>
+<li>Better class literals
+<li>Treat &lt;clinit&gt; properly as static {}
+<li>Move initialisation from static {} to declarations where possible
+<li>Move initialisation from constrcutors to declarations where possible
+<li>Prune dead decompiled code (step 1)
+</ul>
+
+<h4>0_12 <small>(<i>2013-05-09</i>)</small></h4>
+
+<ul>
+<li>Interface extension methods (defender methods)
+<li>Improve display of annotations
+<li>Fix bug with declaration of string literals when direct from constpool
+<li>Infer top directory when analysing files, to better search for imports.
+<li>Fix issue with typing of array declarations
+<li>Simplify boolean expressions in more places
+<li>Hide anonymous translation classes (eg enum switch lookup classes)
+<li>Various output tidying, imports, package name display
+<li>Fix incorrectly detecting some float literals as double
+<li>Resugar enums (disable with --sugarenums false)
+</ul>
+
+<h4>0_11 <small>(<i>2013-04-17</i>)</small></h4>
+
+<ul>
+<li>Java 8 Lambda functions. (controlled with --decodelambdas)
+<li>Default desugaring is now by language version in class file - i.e. switch in string will not be desugared automatically unless classfile is java 7.  Can be controlled with command line parameters.
+</ul>
+
+<h4>0_10 <small>(<i>2013-04-05</i>)</small></h4>
+
+<ul>
+<li>Annotations
+<li>StringBuilder -> String desugaring doesn't lose implicit casts
+<li>Significant improvement to reversing of while(true) logic.
+<li>Inline inner classes
+<li>Initial inner class desugaring - remove (optionally) synthetic constructor args (more to do)
+</ul>
+
+<h4>0_9 <small>(<i>2013-03-13</i>)</small></h4>
+
+<ul>
+<li>Also show throw specification
+<li>Fixed bug which lost stack merges when they weren't immediately used. (quite rare, it happens!!)
+<li>Tidy redundant ternaries
+</ul>
+
+<h4>0_8 <small>(<i>2013-03-07</i>)</small></h4>
+
+<ul>
+<li>Proper variable declarations finally!
+<li>fix some type locking problems introduced in 0_7.
+</ul>
+
+<h4>0_7 <small>(<i>2013-03-05</i>)</small></h4>
+
+<ul>
+<li>Switch on enum re-sugaring
+<li>Better type inference with integral types (i.e. detecting booleans)
+<li>Better basic block detection
+<li>improved argument handling
+<li>Better generics support
+<ul>
+<li>Will now load referenced classes if possible to get generic signatures
+<li>Displays signature data for fields
+<li>Propagates generic type info - so iterator() on List&lt;Fred&gt; will return Iterator&lt;Fred&gt;, and next() on that will return Fred.  (You can see this in collection loops very clearly)
+</ul>
+<li>Better command line parameters. (--help to see) (I said better, I didn't say great!).
+</ul>
+
+<h4>0_6 <small>(<i>2013-02-01</i>)</small></h4>
+
+<ul>
+<li>Switch on string re-sugaring
+<li>Remove temporaries in catch blocks
+</ul>
+
+<h4>0_5</h4>
+
+<ul>
+<li>Trivial JSR handling
+<li>fixed bug with DUP2_X1 (only ever seen in obfuscated code)
+<li>tidied output
+<li>I2B types
+<li>fix bug with incorrect ordering of continues explicitly at end of while blocks.
+</ul>
+
+<h4>0_4</h4>
+
+<ul>
+<li>SWAP op (I've only ever seen this in obfuscated code!!)
+<li>Support for ConstantAttribute
+<li>Extra int type inference from return values
+<li>Allow mutation statements (|=, += etc, support for preinc / postinc).
+<li>Better labelling for this/super calls.
+</ul>
+
+<h4>0_3</h4>
+
+<ul>
+<li>Synchronized blocks
+<li>Improved try/catch
+<li>Improve case handling for same branch cases
+<li>Initial handling for generics (only from signature now).
+</ul>
+
+<h4>0_2</h4>
+
+<ul>
+<li>Java 6 iteration loops detected
+<li>Better type information/inference
+<li>MULTIANEWARRAY (and other array improvements)
+<li>*CMP* refactored, don't appear in output now.
+</ul>
+
+<hr width="100%">
+<p>
+<i>It goes without saying, that you should not use this to violate any laws, customs or kittens.  Decompilers are fun, and that is all.</i>
+</p>
+<hr width=100%> <table border=0 width=100%> <tr>  <td> </td>  <td align=right>   <font size=-1><i>Last updated - see releases!</i></font><br> </td> </tr> </table> </body> </html>
