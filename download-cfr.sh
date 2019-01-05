@@ -80,8 +80,7 @@ then
 		echo 'Update found. Updating....'
 		download $(printf '%s/%s' $cfr_download $res) > $res
 		rm $lib_cfr
-		cd -
-		git add $(printf '%s%s' $lib_path $res)
+		git add $res
 		git commit -m $(printf 'Updated CFR to v%s.%s' $maj_remote $min_rem)
 	else
 		echo 'You have latest.'
