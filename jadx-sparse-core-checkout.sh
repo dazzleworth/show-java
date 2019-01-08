@@ -5,11 +5,27 @@
 # https://github-windows.s3.amazonaws.com/GitHubSetup.exe 
 # No permission required in normal Windows environment
 
-
+jadx_version_file="./core.version"
 jadx_core_rep=https://github.com/skylot/jadx.git
 tmp_path=tmp
 src_path=($tmp_path "jadx-core" "src" "main" "java" "jadx")
 dest_path=("app" "src" "main" "java")
+cur_commit=$(git rev-parse HEAD)
+cur_remote_commit=$(git ls-remote "$jadx_core_rep" HEAD | head -1)
+
+if [ "$cur_remote_commit" -eq "$cur_commit" ] && [ ! -f $jadx_version_file ];
+then
+	exit 0
+fi
+
+if [ -f $jadx_version_file ]
+then
+	IFS= read -r -n 36 core_curr_commit < $jadx_version_file
+	if [ "$cur_remote_commit" -eq "$core_curr_commit" ]
+	then
+		exit 0
+	fi
+fi
 
 mkdir $tmp_path
 cd "$tmp_path$ds"
@@ -26,4 +42,10 @@ rm -r "${dest_path}jadx"
 
 mv -v $src_path $dest_path
 
+echo $cur_remote_commit > $jadx_version_file
+
 rm -rf "$tmp_path"
+
+git add .
+
+git commit -m $(printf 'Upgraded JADX-core to %s...' | cut -c 1-7 )
