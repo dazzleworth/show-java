@@ -15,6 +15,7 @@ cur_remote_commit=$(git ls-remote "$jadx_core_rep" HEAD | head -1 | cut -c1-10)
 
 if [ "$cur_remote_commit" = "$cur_commit" ] && [ ! -f $jadx_version_file ];
 then
+	echo 'You just cloned this repository. Core should be latest.'
 	exit 0
 fi
 
@@ -23,6 +24,7 @@ then
 	IFS= read -r -n 36 core_curr_commit < $jadx_version_file
 	if [ "$cur_remote_commit" = "$core_curr_commit" ]
 	then
+		echo 'Core is already updated.'
 		exit 0
 	fi
 fi
@@ -48,4 +50,4 @@ rm -rf "$tmp_path"
 
 git add .
 
-git commit -m $(printf 'Upgraded JADX-core to %s...' | cut -c 1-7 )
+git commit -m $(printf 'Upgraded JADX-core to %s...' ) #| cut -c 1-7 )
